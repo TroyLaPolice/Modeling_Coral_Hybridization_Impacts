@@ -19,7 +19,7 @@ initialize()
 	if (!exists("DS"))
 		defineConstant("DS", 1); // Down scale the simulation ( Must be >= 1)
 	if (!exists("SN"))
-		defineConstant("SN", integerDiv(3000, DS)); // Starting number of individuals
+		defineConstant("SN", integerDiv(300, DS)); // Starting number of individuals
 	if (!exists("cervicornisK"))
 		defineConstant("cervicornisK", 0.064 / DS); // carrying capacity for cervicornis (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling 
 	if (!exists("palmataK"))
@@ -30,9 +30,9 @@ initialize()
 	// Movement and interaction and competition:
 	// ***********************************
 	if (!exists("SDX"))
-		defineConstant("SDX", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
+		defineConstant("SDX", 5); // Movement standard diviation (sigma) for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
 	if (!exists("SDY"))
-		defineConstant("SDY", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
+		defineConstant("SDY", 5); // Movement standard diviation (sigma) for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
 	
 	// Mating rate params:
 	// ***********************************
@@ -43,7 +43,7 @@ initialize()
 	if (!exists("settle_pro"))
 		defineConstant("settle_pro", 0.07215); // Settlement for a prolifera
 	if (!exists("MD"))
-		defineConstant("MD", 10); // Mating distance (ENTER IN KILOMETERS)
+		defineConstant("MD", 5); // Mating distance (ENTER IN KILOMETERS)
 	if (!exists("cer_cer"))
 		defineConstant("cer_cer", 0.525); // Mating pref for cervicornis X cervicornis
 	if (!exists("pal_pal"))
@@ -69,9 +69,9 @@ initialize()
 	
 	// If using provided EEA maps, length and width for map style images should be kept at a 1 to 1 aspect ratio (square) to avoid distortion
 	if (!exists("map_size_length"))
-		defineConstant("map_size_length", 10);
+		defineConstant("map_size_length", 12.964);
 	if (!exists("map_size_width"))
-		defineConstant("map_size_width", 10);
+		defineConstant("map_size_width", 8.96);
 	
 	// Map citation: https://www.eea.europa.eu/data-and-maps/figures/elevation-map-of-europe
 	// ----------------------------------------------------
