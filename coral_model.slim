@@ -333,7 +333,7 @@ reproduction()
 	writeFile(wd + output_runtime_file_name, param_string, append=T);
 	
 	// Population stats headers - write to file
-	stats_header_string = paste("Year", "PopulationSize", "Total_palmata", "Total_cervicornis", "Ratio_palmata_to_cervicornis", "palmata_Ancestry_All", "palmata_Ancestry_palmata", "palmata_Ancestry_cervicornis", sep=",");
+	stats_header_string = paste("Year", "PopulationSize", "Total_palmata", "Total_cervicornis", "Total_prolifera", "Ratio_palmata_to_cervicornis", "palmata_Ancestry_palmata", "palmata_Ancestry_cervicornis", sep=",");
 	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".txt");
 	writeFile(wd + output_stats_file_name, stats_header_string, append=T);
 }
@@ -344,29 +344,29 @@ reproduction()
 	year_counter = paste("Simulation Year: ", sim.cycle);
 	print(year_counter);
 	
-	// define vector of palmata and vector of cervicornis
+	// define vector of palmata, vector of cervicornis, vector of prolifera
 	palmata = p1.individuals[p1.individuals.z == 1];
 	cervicornis = p1.individuals[p1.individuals.z == 0];
-	all_inds = p1.individuals;
+	prolifera = p1.individuals[p1.individuals.z == 2];
 	
 	// calculate num palmata
-	num_palmata = sum(p1.individuals.z);
+	num_palmata = length(palmata);
 	
 	//calculate num cervicornis
-	num_cervicornis = (p1.individuals.length() - sum(p1.individuals.z));
+	num_cervicornis = length(cervicornis);
+	
+	//calculate num prolifera
+	num_prolifera = length(prolifera);
 	
 	// calculate the ratio of palmata in the total population to file
-	ratio = (sum(p1.individuals.z) / p1.individuals.length());
+	ratio = (num_palmata / num_cervicornis);
 	
 	// calculate population size statistics
 	pop_size = p1.individuals.length();
 	
-	// calculate the overall palmata ancestry
-	palmata_ancestry_all = mean(all_inds.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2));
-	
 	// calculate the palmata ancestry in all palmata
 	if (length(palmata) != 0)
-		palmata_ancestry_palmata = mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2));
+		cervicornis_ancestry_palmata = (1 - (mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2))));
 	else
 		palmata_ancestry_palmata = 0.0;
 	
@@ -377,7 +377,7 @@ reproduction()
 		palmata_ancestry_cervicornis = 0.0;
 	
 	// write outputs
-	output_string = paste(sim.cycle, pop_size, num_palmata, num_cervicornis, palmata_ancestry_all, palmata_ancestry_palmata, palmata_ancestry_cervicornis, sep=",");
+	output_string = paste(sim.cycle, pop_size, num_palmata, num_cervicornis, num_prolifera, ratio, cervicornis_ancestry_palmata, palmata_ancestry_cervicornis, sep=",");
 	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".txt");
 	writeFile(wd + output_stats_file_name, output_string, append=T);
 }
