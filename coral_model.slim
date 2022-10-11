@@ -26,6 +26,8 @@ initialize()
 		defineConstant("palmataK", 0.128 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
 	if (!exists("initial_ratio"))
 		defineConstant("initial_ratio", 0.5); // ratio of cervicornis:palmata
+	if (!exists("initial_prolifera_pop"))
+		defineConstant("initial_prolifera_pop", 0.05); // insert the percentage of the total population that are prolifera
 	
 	// Movement and interaction and competition:
 	// ***********************************
@@ -287,8 +289,11 @@ reproduction()
 	}
 	
 	// Define z param in offspring (phenotype, 0 = cervicornis, 1 = palmata, 2 = prolifera)
-		palmata_inds = p1.sampleIndividuals(asInteger(initial_ratio*SN));
-		palmata_inds.z = 1;
+		palmata_ind = p1.sampleIndividuals(asInteger(initial_ratio*SN));
+		palmata_ind.z = 1;
+				
+		prolifera_inds = p1.sampleIndividuals(asInteger(initial_prolifera_pop*SN));
+		prolifera_inds.z = 2;
 		
 	// Tag genomic ancestry of palmata with marker mutations (m1)
 	// Each marker mutation represents 1Mb
@@ -322,10 +327,10 @@ reproduction()
 1 early()
 {
 	// log runtime params
-	param_string = paste(SN, cervicornisK, palmataK, SDX, SDY);
+	param_string = paste(SN, cervicornisK, palmataK, SDX, SDY, initial_ratio, initial_prolifera_pop);
 	
 	// File headings
-	param_heading = paste("SN cervicornisK palmataK SDX SDY");
+	param_heading = paste("SN cervicornisK palmataK SDX SDY initial_ratio initial_prolifera_pop");
 	
 	// Runtime params - write to file
 	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".txt");
