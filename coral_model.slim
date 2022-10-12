@@ -152,8 +152,8 @@ initialize()
 		// Color Based on Percent Ancestry
 		// -------------------------------
 		
-		value = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
-		i.color = rgb2color(hsv2rgb(c(0.6, 1.0, value)));
+		ancestry = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+		i.color = rgb2color(hsv2rgb(c(0.6, 1.0, ancestry)));
 		
 		
 		if (Color_scheme == 1)
