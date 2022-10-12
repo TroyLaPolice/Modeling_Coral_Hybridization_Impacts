@@ -19,11 +19,11 @@ initialize()
 	if (!exists("DS"))
 		defineConstant("DS", 1); // Down scale the simulation ( Must be >= 1)
 	if (!exists("SN"))
-		defineConstant("SN", integerDiv(630, DS)); // Starting number of individuals
+		defineConstant("SN", integerDiv(2600, DS)); // Starting number of individuals
 	if (!exists("cervicornisK"))
-		defineConstant("cervicornisK", 200 / DS); // carrying capacity for cervicornis (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling 
+		defineConstant("cervicornisK", 1000 / DS); // carrying capacity for cervicornis (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling 
 	if (!exists("palmataK"))
-		defineConstant("palmataK", 200 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
+		defineConstant("palmataK", 1000 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
 	if (!exists("initial_ratio"))
 		defineConstant("initial_ratio", 0.5); // ratio of cervicornis:palmata
 	
