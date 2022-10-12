@@ -84,10 +84,10 @@ initialize()
 	initializeMutationType("m1", 0.5, "f", 0.0); // Tag palmata ancestry
 	m1.convertToSubstitution = F;
 	initializeGenomicElementType("g1", m1, 1.0);
-	initializeGenomicElement(g1, 0, 2886);
-	initializeMutationRate(0.0);
+	initializeGenomicElement(g1, 0, 2886); // Genome Size in MB
+	initializeMutationRate(0.0); // Zero Mutations
 	rates = c(0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01, 0.5, 0.01);
-	ends = c(247, 248, 491, 492, 692, 693, 884, 885, 1066, 1067, 1238, 1239, 1398, 1399, 1545, 1546, 1686, 1687, 1822, 1823, 1957, 1958, 2090, 2091, 2205, 2206, 2312, 2313, 2413, 2414, 2503, 2504, 2583, 2584, 2660, 2661, 2724, 2725, 2787, 2788, 2835, 2836, 2886);
+	ends = c(247, 248, 491, 492, 692, 693, 884, 885, 1066, 1067, 1238, 1239, 1398, 1399, 1545, 1546, 1686, 1687, 1822, 1823, 1957, 1958, 2090, 2091, 2205, 2206, 2312, 2313, 2413, 2414, 2503, 2504, 2583, 2584, 2660, 2661, 2724, 2725, 2787, 2788, 2835, 2836, 2886); // Recombination Rates and Chromosome Initialization
 	initializeRecombinationRate(rates, ends);
 	
 	// ---------------------------------------------------
@@ -99,13 +99,102 @@ initialize()
 
 1 early()
 {
-	sim.addSubpop("p1", SN);
+	sim.addSubpop("p1", SN); // Initialize population based on starting number of individuals
 }
 
 2: first()
 {
-	// look for mates
-	i2.evaluate(p1);
+	i2.evaluate(p1); // Initialize mating interaction
+}
+
+1 early()
+{
+
+	// -----------------------------------------------------------------------------
+	//  Before sim starts ---> Initalize map and create initial starting individuals
+	// -----------------------------------------------------------------------------
+	
+	// Check user input for what style map
+	if (map_style == 0)
+		mapImage = Image(simple); //simple
+	else if (map_style == 1)
+		mapImage = Image(LaughingBirdCaye); //caye
+	else if (map_style == 2)
+		mapImage = Image(custom_map); //custom
+	
+	// Set up map
+	p1.setSpatialBounds(c(0.0, 0.0, map_size_width, map_size_length));
+	p1.defineSpatialMap("map_object", "xy", 1.0 - mapImage.floatK, valueRange=c(0.0, 1.0), colors=c("#ffffff", "#000000"));
+	
+	// place individuals on the map
+	for (ind in p1.individuals)
+	{
+		do
+			newPos = c(runif(1, 0, map_size_width), runif(1, 0, map_size_length));
+		while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0);
+		ind.setSpatialPosition(newPos);
+		ind.z = 0;
+	}
+	
+	// Define z param in offspring (phenotype, 0 = cervicornis, 1 = palmata, 2 = prolifera)
+		palmata_ind = p1.sampleIndividuals(asInteger(initial_ratio*SN));
+		palmata_ind.z = 1;
+		
+	// Tag genomic ancestry of palmata with marker mutations (m1)
+	// Each marker mutation represents 1Mb
+	indpalmata = p1.individuals[p1.individuals.z == 1];
+	indpalmata.genomes.addNewMutation(m1, 0.0, 0:2886);
+	
+	// Add color to represent phenotype
+	for (i in p1.individuals)
+	{
+		// -------------------------------
+		// Color Based on Percent Ancestry
+		// -------------------------------
+		
+		value = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+		i.color = rgb2color(hsv2rgb(c(0.6, 1.0, value)));
+		
+		
+		if (Color_scheme == 1)
+		{
+			// --------------------------------
+			// Color Based on Discrete Species
+			// --------------------------------
+			
+			// Add color to represent phenotype
+			if (i.z == 0) // cervicornis
+				i.color = "red"; //cervicornis = red
+			else if (i.z == 1) // palmata
+				i.color = "blue"; //palmata = blue
+			else if (i.z == 2) // prolifera
+				i.color = "green"; // prolifera = green
+		}
+	}
+}
+
+1 early()
+{
+
+	// -----------------------------------------------
+	//  Before sim starts ---> Initialize output files
+	// -----------------------------------------------
+	
+	// log runtime params
+	param_string = paste(SN, cervicornisK, palmataK, SDX, SDY, initial_ratio);
+	
+	// Runtime params file headings - write to file
+	param_heading = paste("SN cervicornisK palmataK SDX SDY initial_ratio");
+	
+	// Runtime params - write to file
+	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".txt");
+	writeFile(wd + output_runtime_file_name, param_heading, append=T);
+	writeFile(wd + output_runtime_file_name, param_string, append=T);
+	
+	// Population stats file headings - write to file
+	stats_header_string = paste("Year", "PopulationSize", "Total_palmata", "Total_cervicornis", "Total_prolifera", "Ratio_palmata_to_cervicornis", "cervicornis_ancestry_in_palmata", "palmata_ancestry_in_cervicornis", "palmata_ancestry_in_prolifera", "cervicornis_ancestry_in_prolifera" ,sep=",");
+	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".txt");
+	writeFile(wd + output_stats_file_name, stats_header_string, append=T);
 }
 
 reproduction()
@@ -120,24 +209,24 @@ reproduction()
 	{
 		// Sets up a vector that checks if the individuals in the surrounding area are of like phenotype (i.e. if their z params are the same)
 		mates_similarity_bool = mates.z == individual.z;
-		mates_similarity = asFloat(mates_similarity_bool);
+		mates_similarity = asFloat(mates_similarity_bool); // convert to float to allow for mutation of the vector (replace with probabilities of type float)
 		
 		// Generates a vector of probabilites of the individual mating with a particular mate given their phenotype
 		
 		if (individual.z == 0) // individual == cervicornis
 		{
-			mates_similarity[mates_similarity_bool == T] = cer_cer;
-			mates_similarity[mates_similarity_bool == F] = (1 - cer_cer);
+			mates_similarity[mates_similarity_bool == T] = cer_cer; // selection probability for mates that are also cervicornis
+			mates_similarity[mates_similarity_bool == F] = (1 - cer_cer); // selection probability for mates that are not cervicornis
 		}
 		else if (individual.z == 1) // individual == palmata
 		{
-			mates_similarity[mates_similarity_bool == T] = pal_pal;
-			mates_similarity[mates_similarity_bool == F] = (1 - pal_pal);
+			mates_similarity[mates_similarity_bool == T] = pal_pal; // selection probability for mates that are also palmata
+			mates_similarity[mates_similarity_bool == F] = (1 - pal_pal); // selection probability for mates that are not palmata
 		}
 		else if (individual.z == 2) // individual == prolifera
 		{
-			mates_similarity[mates_similarity_bool == T] = pro_pro;
-			mates_similarity[mates_similarity_bool == F] = pro_backcross;
+			mates_similarity[mates_similarity_bool == T] = pro_pro; // selection probability for mates that are also prolifera
+			mates_similarity[mates_similarity_bool == F] = pro_backcross; // selection probability for mates would result in a backcross
 		}
 		
 		if (sum(mates_similarity) != 0)
@@ -188,20 +277,23 @@ reproduction()
 					// Define z param in offspring (phenotype, 0 = cervicornis, 1 = palmata, 2 == prolifera)
 					offspring.z = 0;
 					
+					// Determine percent ancestry in offspring
 					ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
 					
-					if (ancestry > ancestry_threshold)
-						offspring.z = 1;
-					else if (ancestry < (1-ancestry_threshold))
-						offspring.z = 0;
+					// Determine species of the offspring based on ancestry threshold
+					
+					if (ancestry > ancestry_threshold) // if percent palmata ancestry is larger than the ancestry_threshold to be a palmata
+						offspring.z = 1; // offspring is palmata
+					else if (ancestry < (1-ancestry_threshold)) // if percent palmata ancestry is smaller than 1 minus the ancestry_threshold to be a palmata 
+						offspring.z = 0;  // offspring is cervicornis
 					else
-						offspring.z = 2;
+						offspring.z = 2; // otherwise it is middle of the range and genomically can be considered a prolifera
 						
-					if (Color_scheme == 1)
+					if (Color_scheme == 1) // Coloring in GUI of individuals
 					{
-						// -----------------------
-						// Color Based on Behavior
-						// -----------------------
+						// --------------------------------
+						// Color Based on Discrete Species
+						// --------------------------------
 						
 						// Add color to represent phenotype
 						if (offspring.z == 0) // cervicornis
@@ -213,14 +305,18 @@ reproduction()
 					}
 					else
 					{
-						// -----------------------
-						// Color Based on Genotype
-						// -----------------------
+						// -------------------------------
+						// Color Based on Percent Ancestry
+						// -------------------------------
 						
-						value = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
-						offspring.color = rgb2color(hsv2rgb(c(0.6, 1.0, value)));
+						// Calculate percent ancestry
+						ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+						
+						// Color as a gradient based on the percent ancestry
+						offspring.color = rgb2color(hsv2rgb(c(0.6, 1.0, ancestry)));
 					}
 					
+					// Determine an intital offspring postion based to initalize the individual before dispersal step below
 					pos = individual.spatialPosition;
 					offspring.setSpatialPosition(pos);
 						
@@ -231,14 +327,17 @@ reproduction()
 					// How far individuals diffuse away
 					do
 					{
+						// Normal multivariate distribution dictating dispersal to pick new coordinates in the movement range
 						coordinate_matrix = rmvnorm(1, c(0, 0), matrix(c(SDX^2, 0, 0, SDY^2), nrow=2));
 						coordinates = c(coordinate_matrix[0], coordinate_matrix[1]);
 						
-						// Next we can reset the position
+						// Determine the new positional coordinates
 						newPos = offspring.spatialPosition + coordinates;
 					}
-					while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0);
-					offspring.setSpatialPosition(newPos);
+					while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0); // While not bounds
+					
+					// Set settle point for offspring
+					offspring.setSpatialPosition(newPos); 
 
 				}
 			}
@@ -246,95 +345,30 @@ reproduction()
 	}
 }
 
-1 early()
-{
-	// Check user input for what style map
-	if (map_style == 0)
-		mapImage = Image(simple); //simple
-	else if (map_style == 1)
-		mapImage = Image(LaughingBirdCaye); //caye
-	else if (map_style == 2)
-		mapImage = Image(custom_map); //custom
-	
-	// Set up map
-	p1.setSpatialBounds(c(0.0, 0.0, map_size_width, map_size_length));
-	p1.defineSpatialMap("map_object", "xy", 1.0 - mapImage.floatK, valueRange=c(0.0, 1.0), colors=c("#ffffff", "#000000"));
-	
-	// place individuals on the map
-	for (ind in p1.individuals)
-	{
-		do
-			newPos = c(runif(1, 0, map_size_width), runif(1, 0, map_size_length));
-		while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0);
-		ind.setSpatialPosition(newPos);
-		ind.z = 0;
-	}
-	
-	// Define z param in offspring (phenotype, 0 = cervicornis, 1 = palmata, 2 = prolifera)
-		palmata_ind = p1.sampleIndividuals(asInteger(initial_ratio*SN));
-		palmata_ind.z = 1;
-		
-	// Tag genomic ancestry of palmata with marker mutations (m1)
-	// Each marker mutation represents 1Mb
-	indpalmata = p1.individuals[p1.individuals.z == 1];
-	indpalmata.genomes.addNewMutation(m1, 0.0, 0:2886);
-	
-	// Add color to represent phenotype
-	for (i in p1.individuals)
-	{
-		// -----------------------
-		// Color Based on Phenotype
-		// -----------------------
-		value = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
-		i.color = rgb2color(hsv2rgb(c(0.6, 1.0, value)));
-		if (Color_scheme == 1)
-		{
-			// -----------------------
-			// Color Based on Behavior
-			// -----------------------
-			// Add color to represent phenotype
-			if (i.z == 0) // cervicornis
-				i.color = "red"; //cervicornis = red
-			else if (i.z == 1) // palmata
-				i.color = "blue"; //palmata = blue
-			else if (i.z == 2) // prolifera
-				i.color = "green"; // prolifera = green
-		}
-	}
-}
-
 late()
 {
+	// --------------------------------------------------------------------------------
+	//  MORTALITY ---> Density dependent competion avoids exponential population growth
+	// --------------------------------------------------------------------------------
+	
+	// Initalize vectors of the species
 	cervicornis_inds = p1.individuals[p1.individuals.z == 0];
 	palmata_inds = p1.individuals[p1.individuals.z == 1];
 	prolifera_inds = p1.individuals[p1.individuals.z == 2];
 	
+	// Scale fitness based on population densities
 	cervicornis_inds.fitnessScaling = cervicornisK / (length(cervicornis_inds));
 	palmata_inds.fitnessScaling = palmataK / (length(palmata_inds));
 	prolifera_inds.fitnessScaling = palmataK / (length(prolifera_inds));
 }
 
-1 early()
-{
-	// log runtime params
-	param_string = paste(SN, cervicornisK, palmataK, SDX, SDY, initial_ratio);
-	
-	// File headings
-	param_heading = paste("SN cervicornisK palmataK SDX SDY initial_ratio");
-	
-	// Runtime params - write to file
-	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".txt");
-	writeFile(wd + output_runtime_file_name, param_heading, append=T);
-	writeFile(wd + output_runtime_file_name, param_string, append=T);
-	
-	// Population stats headers - write to file
-	stats_header_string = paste("Year", "PopulationSize", "Total_palmata", "Total_cervicornis", "Total_prolifera", "Ratio_palmata_to_cervicornis", "cervicornis_ancestry_in_palmata", "palmata_ancestry_in_cervicornis", "palmata_ancestry_in_prolifera", "cervicornis_ancestry_in_prolifera" ,sep=",");
-	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".txt");
-	writeFile(wd + output_stats_file_name, stats_header_string, append=T);
-}
-
 1:6000 late()
 {
+
+	// -------------------------------------------
+	//  Each Generation ---> Output stats to files
+	// -------------------------------------------
+	
 	// provide feedback on progress for command line users
 	year_counter = paste("Simulation Year: ", sim.cycle);
 	print(year_counter);
