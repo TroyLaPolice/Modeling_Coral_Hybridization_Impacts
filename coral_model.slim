@@ -69,15 +69,15 @@ initialize()
 	defineConstant("file_extention", ".png");
 	defineConstant("simple", wd + "/simple.png"); // File Path to Map Image
 	defineConstant("LaughingBirdCaye", wd + "/laughing_bird_caye.png"); // File Path to Map Image
+	// Map citation: https://www.laughingbird.org/park2.html
 	defineConstant("custom_map", wd + custom_map_filename); // File Path to Map Image
 	
-	// If using provided EEA maps, length and width for map style images should be kept at a 1 to 1 aspect ratio (square) to avoid distortion
+	// Map Dimensions of 8.96km x 12.964km Based on laughingbird.org map
 	if (!exists("map_size_length"))
 		defineConstant("map_size_length", 12.964);
 	if (!exists("map_size_width"))
 		defineConstant("map_size_width", 8.96);
-	
-	// Map citation: https://www.eea.europa.eu/data-and-maps/figures/elevation-map-of-europe
+
 	// ----------------------------------------------------
 	//  GENETIC COMPONENT --> Initialize Genomic Elements
 	// ----------------------------------------------------
