@@ -8,7 +8,7 @@ initialize()
 	// ---------------------------------------------------
 	//SET WORKING DIRECTORY AND CUSTOM MAP NAME IF DESIRED
 	if (!exists("wd"))
-		defineConstant("wd", "/home/tml5905/Documents/CoralPopulationSimulation");
+		defineConstant("wd", "C:/Users/troyl/OneDrive/School/Documents/Grad School/BGEN 556/project");
 	if (!exists("custom_map_filename"))
 		defineConstant("custom_map_filename", 0); // Parameter = file name of map (as string) if user wants to use their own map and override the built in maps, else == 0
 	if (!exists("output_name"))
@@ -17,7 +17,7 @@ initialize()
 	// Carrying Capacities and Pop Sizes:
 	// ***********************************
 	if (!exists("DS"))
-		defineConstant("DS", 1); // Down scale the simulation ( Must be >= 1)
+		defineConstant("DS", 2); // Down scale the simulation ( Must be >= 1)
 	if (!exists("SN"))
 		defineConstant("SN", integerDiv(2600, DS)); // Starting number of individuals
 	if (!exists("cervicornisK"))
@@ -58,6 +58,7 @@ initialize()
 	// ---------------------------------------------------
 	// RUN TIME PREFERENCE PARAMETERS
 	// ---------------------------------------------------
+	
 	// Determine Coloring Schemes:
 	// ***********************************	
 	defineConstant("Color_scheme", 1); // Parameter of 0 = Genomic Coloring, 1 = Phenotypic Coloring
@@ -148,14 +149,6 @@ initialize()
 	// Add color to represent phenotype
 	for (i in p1.individuals)
 	{
-		// -------------------------------
-		// Color Based on Percent Ancestry
-		// -------------------------------
-		
-		ancestry = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
-		i.color = rgb2color(hsv2rgb(c(0.6, 1.0, ancestry)));
-		
-		
 		if (Color_scheme == 1)
 		{
 			// --------------------------------
@@ -169,6 +162,15 @@ initialize()
 				i.color = "blue"; //palmata = blue
 			else if (i.z == 2) // prolifera
 				i.color = "green"; // prolifera = green
+		}
+		else
+		{
+			// -------------------------------
+			// Color Based on Percent Ancestry
+			// -------------------------------
+		
+			ancestry = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+			i.color = rgb2color(hsv2rgb(c(0.6, 1.0, ancestry)));
 		}
 	}
 }
@@ -203,8 +205,9 @@ reproduction()
 	//  MATING --> Individuals mate with those close by
 	// ---------------------------------------------------
 	
-	// choose nearest neighbor as a mate, within the max distance
+	// creates a vector of neighboring individuals, within the max distance
 	mates = i2.nearestInteractingNeighbors(individual, p1.individuals.length());
+	
 	if (mates.size()) // Runs if there are possible mates near by
 	{
 		// Sets up a vector that checks if the individuals in the surrounding area are of like phenotype (i.e. if their z params are the same)
@@ -393,7 +396,7 @@ late()
 	// calculate population size statistics
 	pop_size = p1.individuals.length();
 	
-	// calculate the palmata ancestry in all palmata
+	// calculate the cervicornis ancestry in all palmata
 	if (length(palmata) != 0)
 		cervicornis_ancestry_palmata = (1 - (mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2))));
 	else
