@@ -20,8 +20,8 @@ if (!exists("custom_map_filename"))
 		defineConstant("DS", 2); // Down scale the simulation ( Must be >= 1)
 	if (!exists("SN"))
 		defineConstant("SN", integerDiv(2600, DS)); // Starting number of individuals
-	if (!exists("cervicornisK"))
-		defineConstant("cervicornisK", 1000 / DS); // carrying capacity for cervicornis (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling 
+	if (!exists("K"))
+		defineConstant("cervicornisK", 1000 / DS); // carrying capacity (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling 
 	if (!exists("palmataK"))
 		defineConstant("palmataK", 1000 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
 	if (!exists("initial_ratio"))
@@ -201,7 +201,7 @@ if (!exists("custom_map_filename"))
 	param_heading = paste("SN cervicornisK palmataK SDX SDY initial_ratio");
 	
 	// Runtime params - write to file
-	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".csv");
+	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".tsv");
 	writeFile(wd + output_runtime_file_name, param_heading, append=T);
 	writeFile(wd + output_runtime_file_name, param_string, append=T);
 	
