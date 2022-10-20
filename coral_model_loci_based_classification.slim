@@ -52,8 +52,6 @@ if (!exists("custom_map_filename"))
 		defineConstant("pal_pal", 0.705); // Mating pref for palmata X palmata
 	if (!exists("pro_pro"))
 		defineConstant("pro_pro", 0.001); // Mating pref for prolifera X prolifera
-	if (!exists("pro_backcross"))
-		defineConstant("pro_backcross", 0.01); // Mating pref for a backcross
 	
 	// ---------------------------------------------------
 	// RUN TIME PREFERENCE PARAMETERS
@@ -243,7 +241,7 @@ reproduction()
 		else if (individual.z == 2) // individual == prolifera
 		{
 			mates_similarity[mates_similarity_bool == T] = pro_pro; // selection probability for mates that are also prolifera
-			mates_similarity[mates_similarity_bool == F] = pro_backcross; // selection probability for mates would result in a backcross
+			mates_similarity[mates_similarity_bool == F] = (1 - pro_pro); // selection probability for mates would result in a backcross
 		}
 		
 		if (sum(mates_similarity) != 0)
