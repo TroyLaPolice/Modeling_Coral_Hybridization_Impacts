@@ -195,10 +195,10 @@ if (!exists("custom_map_filename"))
 	// -----------------------------------------------
 	
 	// log runtime params
-	param_string = paste(SN, cervicornisK, palmataK, SDX, SDY, initial_ratio);
+	param_string = paste(SN, cervicornisK, palmataK, proliferaK, SDX, SDY, initial_ratio);
 	
 	// Runtime params file headings - write to file
-	param_heading = paste("SN cervicornisK palmataK SDX SDY initial_ratio");
+	param_heading = paste("SN cervicornisK palmataK proliferaK SDX SDY initial_ratio");
 	
 	// Runtime params - write to file
 	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".tsv");
