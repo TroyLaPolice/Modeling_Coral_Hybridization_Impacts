@@ -8,8 +8,8 @@ initialize()
 	// ---------------------------------------------------
 	//SET WORKING DIRECTORY AND CUSTOM MAP NAME IF DESIRED
 	if (!exists("wd"))
-		defineConstant("wd", "/home/tml5905/Documents/CoralPopulationSimulation");
-	if (!exists("custom_map_filename"))
+		defineConstant("wd", "C:/Users/troyl/OneDrive/School/Documents/Grad School/BGEN 556/project");
+if (!exists("custom_map_filename"))
 		defineConstant("custom_map_filename", 0); // Parameter = file name of map (as string) if user wants to use their own map and override the built in maps, else == 0
 	if (!exists("output_name"))
 		defineConstant("output_name", "out"); // To run default names make an empty string
@@ -147,8 +147,17 @@ initialize()
 	// Each marker mutation represents 1Mb
 	indpalmata = p1.individuals[p1.individuals.z == 1];
 	indpalmata.genomes.addNewMutation(m1, 0.0, 0:267);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 100:100);
-	
+	indpalmata.genomes.addNewMutation(m2, 0.0, 26:26);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 53:53);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 80:80);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 107:107);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 134:134);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 160:160);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 186:186);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 214:214);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 240:240);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 260:260);
+		
 	// Add color to represent phenotype
 	for (i in p1.individuals)
 	{
@@ -192,13 +201,13 @@ initialize()
 	param_heading = paste("SN cervicornisK palmataK SDX SDY initial_ratio");
 	
 	// Runtime params - write to file
-	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".txt");
+	output_runtime_file_name = ("/sim_runtime_params_" + output_name + ".csv");
 	writeFile(wd + output_runtime_file_name, param_heading, append=T);
 	writeFile(wd + output_runtime_file_name, param_string, append=T);
 	
 	// Population stats file headings - write to file
 	stats_header_string = paste("Year", "PopulationSize", "Total_palmata", "Total_cervicornis", "Total_prolifera", "Ratio_palmata_to_cervicornis", "cervicornis_ancestry_in_palmata", "palmata_ancestry_in_cervicornis", "palmata_ancestry_in_prolifera", "cervicornis_ancestry_in_prolifera" ,sep=",");
-	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".txt");
+	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".csv");
 	writeFile(wd + output_stats_file_name, stats_header_string, append=T);
 }
 
@@ -263,12 +272,12 @@ reproduction()
 			}
 			else if (individual.z == 2) // if individual is prolifera
 			{
-				if (species_loci == 2) // Homozygous palmata
-					offspring.z = 1; // offspring is palmata
-				else if (species_loci == 1) // Heterozygous
-					offspring.z = 2;  // offspring is prolifera
-				else if (species_loci == 0) // Homozygous cervicornis
-					offspring.z = 0; // offspring is cervicornis
+				if (mate.z == 0) // if mate is cervicornis
+					settle = settle_cer; // settle at cervicornis rate
+				else if (mate.z == 1) // if mate is palmata
+					settle = settle_pal; // settle at palmata rate
+				else if (mate.z == 2) // if mate is prolifera
+					settle = settle_pro; // settle at prolifera rate
 			}
 			
 			// Generate offspring that will settle sucessfully based on above rate determination
@@ -293,12 +302,12 @@ reproduction()
 					
 					// Determine species of the offspring based on ancestry threshold
 					
-					if (species_loci == 2) // Homozygous palmata
+					if (species_loci >= 16)
 						offspring.z = 1; // offspring is palmata
-					else if (species_loci == 1) // Heterozygous
-						offspring.z = 2;  // offspring is cervicornis
-					else if (species_loci == 0) // Homozygous cervicornis
-						offspring.z = 2; // offspring is prolifera
+					else if (species_loci <= 4)
+						offspring.z = 0; // offspring is cervicornis
+					else
+						offspring.z = 2;  // offspring is prolifera
 						
 					if (Color_scheme == 1) // Coloring in GUI of individuals
 					{
@@ -430,6 +439,6 @@ late()
 	
 	// write outputs
 	output_string = paste(sim.cycle, pop_size, num_palmata, num_cervicornis, num_prolifera, ratio, cervicornis_ancestry_palmata, palmata_ancestry_cervicornis, palmata_ancestry_prolifera, cervicornis_ancestry_prolifera, sep=",");
-	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".txt");
+	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".csv");
 	writeFile(wd + output_stats_file_name, output_string, append=T);
 }
