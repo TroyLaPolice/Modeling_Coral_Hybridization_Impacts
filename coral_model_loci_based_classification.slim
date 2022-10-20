@@ -263,12 +263,12 @@ reproduction()
 			}
 			else if (individual.z == 2) // if individual is prolifera
 			{
-				if (mate.z == 0) // if mate is cervicornis
-					settle = settle_cer; // settle at cervicornis rate
-				else if (mate.z == 1) // if mate is palmata
-					settle = settle_pal; // settle at palmata rate
-				else if (mate.z == 2) // if mate is prolifera
-					settle = settle_pro; // settle at prolifera rate
+				if (species_loci == 2) // Homozygous palmata
+					offspring.z = 1; // offspring is palmata
+				else if (species_loci == 1) // Heterozygous
+					offspring.z = 2;  // offspring is prolifera
+				else if (species_loci == 0) // Homozygous cervicornis
+					offspring.z = 0; // offspring is cervicornis
 			}
 			
 			// Generate offspring that will settle sucessfully based on above rate determination
