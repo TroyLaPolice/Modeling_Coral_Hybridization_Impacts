@@ -1,23 +1,23 @@
 // Keywords: continuous space, continuous spatial landscape, spatial map, reprising boundaries, QTL, quantitative trait loci, spatial competition, spatial mate choice
 
 initialize() {
-	defineConstant("sigma_C", 0.1); // Phenotypic competition
+	defineConstant("sigma_C", 0.5); // Phenotypic competition
 	defineConstant("sigma_K", 0.5); // Fitness scaling based on habitat (color of map)
-	defineConstant("MD", 0.5); // Mating distance (km, I think?)
+	defineConstant("MD", 1); // Mating distance (km, I think?)
 	defineConstant("N", 1000); // Starting population
 	defineConstant("SR", 0.5); // Starting Ratio (palm:cerv)
 	defineConstant("settle_cer", 0.022308); // Settlement for cervicornis X cervicornis cross
 	defineConstant("settle_pal", 0.0351); // Settlement for palmata X palmata cross
 	defineConstant("settle_pro", 0.07215); // Settlement for a prolifera
-	defineConstant("cer_cer", 0.9); // Mating pref for cervicornis X cervicornis
-	defineConstant("pal_pal", 0.9); // Mating pref for palmata X palmata
+	defineConstant("cer_cer", 0.5); // Mating pref for cervicornis X cervicornis
+	defineConstant("pal_pal", 0.5); // Mating pref for palmata X palmata
 	defineConstant("pro_pro", 0.5); // Mating pref for prolifera X prolifera
 	defineConstant("ancestry_threshold", 0.9); // percent ancestry required to be parental species
 	defineConstant("SDX", 2);  // Movement distance in any direction (rolls twice, once per direction)
 	
 	initializeSLiMModelType("nonWF");
 	initializeSLiMOptions(dimensionality="xyz");
-	initializeMutationRate(0);
+	initializeMutationRate(0.0);
 	initializeMutationType("m2", 0.5, "f", 0.0);
 	m2.convertToSubstitution = F;
 	
@@ -36,9 +36,16 @@ initialize() {
 
 
 
-mutationEffect(m2) { return 1.0; }
 1 early() {
 	sim.addSubpop("p1", N);
+}
+
+2: first()
+{
+	i2.evaluate(p1);
+}
+
+1 early() {
 	p1.setSpatialBounds(c(0.0, 0.0, 0.0, 1.0, 1.0, 1.0));
 	p1.individuals.setSpatialPosition(p1.pointUniform(N));
 	p1.individuals.z = 0.0;
@@ -82,10 +89,10 @@ reproduction()
 			mates_similarity[mates_similarity_bool == T] = pal_pal; // selection probability for mates that are also palmata
 			mates_similarity[mates_similarity_bool == F] = (1 - pal_pal); // selection probability for mates that are not palmata
 		}
-		else if (individual.z == 0.5) // individual == prolifera
+		else if (individual.z == 2) // individual == prolifera
 		{
 			mates_similarity[mates_similarity_bool == T] = pro_pro; // selection probability for mates that are also prolifera
-			mates_similarity[mates_similarity_bool == F] = (1 - pro_pro); // selection probability for mates would result in a backcross
+			mates_similarity[mates_similarity_bool == F] = pro_backcross; // selection probability for mates would result in a backcross
 		}
 		
 		if (sum(mates_similarity) != 0)
@@ -102,7 +109,7 @@ reproduction()
 					settle = settle_cer; // settle at cervicornis rate
 				else if (mate.z == 1) // if mate is palmata
 					settle = settle_pro;  // settle at prolifera rate
-				else if (mate.z == 0.5) // if mate is prolifera
+				else if (mate.z == 2) // if mate is prolifera
 					settle = settle_cer; // settle at cervicornis rate
 			}
 			else if (individual.z == 1) // if individual is palmata
@@ -111,16 +118,16 @@ reproduction()
 					settle = settle_pro; // settle at prolifera rate
 				else if (mate.z == 1) // if mate is palmata
 					settle = settle_pal; // settle at palmata rate 
-				else if (mate.z == 0.5) // if mate is prolifera
+				else if (mate.z == 2) // if mate is prolifera
 					settle = settle_pal; // settle at palmata rate
 			}
-			else if (individual.z == 0.5) // if individual is prolifera
+			else if (individual.z == 2) // if individual is prolifera
 			{
 				if (mate.z == 0) // if mate is cervicornis
 					settle = settle_cer; // settle at cervicornis rate
 				else if (mate.z == 1) // if mate is palmata
 					settle = settle_pal; // settle at palmata rate
-				else if (mate.z == 0.5) // if mate is prolifera
+				else if (mate.z == 2) // if mate is prolifera
 					settle = settle_pro; // settle at prolifera rate
 			}
 			
@@ -146,7 +153,7 @@ reproduction()
 					else if (ancestry < (1-ancestry_threshold)) // if percent palmata ancestry is smaller than 1 minus the ancestry_threshold to be a palmata 
 						offspring.z = 0;  // offspring is cervicornis
 					else
-						offspring.z = 0.5; // otherwise it is middle of the range and genomically can be considered a prolifera
+						offspring.z = 2; // otherwise it is middle of the range and genomically can be considered a prolifera
 
 				}
 			}
@@ -175,7 +182,7 @@ late() {
 	//inds.z = phenotype;
 	
 	// color individuals according to z-val
-	inds.color = p1.spatialMapColor("map1", phenotype);
+	inds.color = p1.spatialMapColor("map1", inds.z);
 	
 	// evaluate phenotypic competition
 	i1.evaluate(p1);
@@ -187,11 +194,6 @@ late() {
 
 }
 
-
-2: first()
-{
-	i2.evaluate(p1); // Initialize mating interaction
-}
 
 10000 late() {
 	sim.simulationFinished();
