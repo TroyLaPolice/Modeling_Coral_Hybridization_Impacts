@@ -1,0 +1,198 @@
+// Keywords: continuous space, continuous spatial landscape, spatial map, reprising boundaries, QTL, quantitative trait loci, spatial competition, spatial mate choice
+
+initialize() {
+	defineConstant("sigma_C", 0.1); // Phenotypic competition
+	defineConstant("sigma_K", 0.5); // Fitness scaling based on habitat (color of map)
+	defineConstant("MD", 0.5); // Mating distance (km, I think?)
+	defineConstant("N", 1000); // Starting population
+	defineConstant("SR", 0.5); // Starting Ratio (palm:cerv)
+	defineConstant("settle_cer", 0.022308); // Settlement for cervicornis X cervicornis cross
+	defineConstant("settle_pal", 0.0351); // Settlement for palmata X palmata cross
+	defineConstant("settle_pro", 0.07215); // Settlement for a prolifera
+	defineConstant("cer_cer", 0.9); // Mating pref for cervicornis X cervicornis
+	defineConstant("pal_pal", 0.9); // Mating pref for palmata X palmata
+	defineConstant("pro_pro", 0.5); // Mating pref for prolifera X prolifera
+	defineConstant("ancestry_threshold", 0.9); // percent ancestry required to be parental species
+	defineConstant("SDX", 2);  // Movement distance in any direction (rolls twice, once per direction)
+	
+	initializeSLiMModelType("nonWF");
+	initializeSLiMOptions(dimensionality="xyz");
+	initializeMutationRate(0);
+	initializeMutationType("m2", 0.5, "f", 0.0);
+	m2.convertToSubstitution = F;
+	
+	initializeGenomicElementType("g1", m2, 1.0);
+	initializeGenomicElement(g1, 0, 267); // Genome Size in MB
+	rates = c(0.0447, 0.5, 0.0359, 0.5, 0.05, 0.5, 0.0453, 0.5, 0.05, 0.5, 0.0419, 0.5, 0.0505, 0.5, 0.0469, 0.5, 0.0424, 0.5, 0.0518, 0.5, 0.0542, 0.5, 0.0501, 0.5, 0.041, 0.5, 0.0632);
+	ends = c(27, 28, 54, 55, 76, 77, 95, 96, 115, 116, 136, 137, 152, 153, 167, 168, 186, 187, 205, 206, 222, 223, 239, 240, 253, 254, 267); // Recombination Rates and Chromosome Initialization
+	initializeRecombinationRate(rates, ends);
+	
+	initializeInteractionType(1, "xyz", reciprocal=T, maxDistance=sigma_C);     // competition
+	i1.setInteractionFunction("n", 1.0, sigma_C);
+	
+	initializeInteractionType(2, "xyz", reciprocal=T, maxDistance=MD);     // mate choice
+	//i2.setInteractionFunction("n", 1.0, MD);
+}
+
+
+
+mutationEffect(m2) { return 1.0; }
+1 early() {
+	sim.addSubpop("p1", N);
+	p1.setSpatialBounds(c(0.0, 0.0, 0.0, 1.0, 1.0, 1.0));
+	p1.individuals.setSpatialPosition(p1.pointUniform(N));
+	p1.individuals.z = 0.0;
+	palmata_ind = p1.sampleIndividuals(asInteger(SR*N));
+	palmata_ind.z = 1;
+		
+	// Tag genomic ancestry of palmata with marker mutations (m1)
+	// Each marker mutation represents 1Mb
+	indpalmata = p1.individuals[p1.individuals.z == 1];
+	indpalmata.genomes.addNewMutation(m2, 0.0, 0:267);
+	
+	defineConstant("mapValues", matrix(runif(25, 0, 1), ncol=5));
+	p1.defineSpatialMap("map1", "xy", mapValues, interpolate=T,
+		valueRange=c(0.0, 1.0), colors=c("red", "yellow"));
+}
+
+reproduction()
+{
+	// ---------------------------------------------------
+	//  MATING --> Individuals mate with those close by
+	// ---------------------------------------------------
+	
+	// creates a vector of neighboring individuals, within the max distance
+	mates = i2.nearestInteractingNeighbors(individual, p1.individuals.length());
+	
+	if (mates.size()) // Runs if there are possible mates near by
+	{
+		// Sets up a vector that checks if the individuals in the surrounding area are of like phenotype (i.e. if their z params are the same)
+		mates_similarity_bool = mates.z == individual.z;
+		mates_similarity = asFloat(mates_similarity_bool); // convert to float to allow for mutation of the vector (replace with probabilities of type float)
+		
+		// Generates a vector of probabilites of the individual mating with a particular mate given their phenotype
+		
+		if (individual.z == 0) // individual == cervicornis
+		{
+			mates_similarity[mates_similarity_bool == T] = cer_cer; // selection probability for mates that are also cervicornis
+			mates_similarity[mates_similarity_bool == F] = (1 - cer_cer); // selection probability for mates that are not cervicornis
+		}
+		else if (individual.z == 1) // individual == palmata
+		{
+			mates_similarity[mates_similarity_bool == T] = pal_pal; // selection probability for mates that are also palmata
+			mates_similarity[mates_similarity_bool == F] = (1 - pal_pal); // selection probability for mates that are not palmata
+		}
+		else if (individual.z == 0.5) // individual == prolifera
+		{
+			mates_similarity[mates_similarity_bool == T] = pro_pro; // selection probability for mates that are also prolifera
+			mates_similarity[mates_similarity_bool == F] = (1 - pro_pro); // selection probability for mates would result in a backcross
+		}
+		
+		if (sum(mates_similarity) != 0)
+		{
+			// Samples an individual in the population based on the assortative mating probabilities. 
+			mate = sample(mates, 1, weights=mates_similarity);
+			
+			// select proper settlement rate:
+			// ------------------------------
+			
+			if (individual.z == 0) // if individual is cervicornis
+			{
+				if (mate.z == 0) // if mate is cervicornis
+					settle = settle_cer; // settle at cervicornis rate
+				else if (mate.z == 1) // if mate is palmata
+					settle = settle_pro;  // settle at prolifera rate
+				else if (mate.z == 0.5) // if mate is prolifera
+					settle = settle_cer; // settle at cervicornis rate
+			}
+			else if (individual.z == 1) // if individual is palmata
+			{
+				if (mate.z == 0) // if mate is cervicornis
+					settle = settle_pro; // settle at prolifera rate
+				else if (mate.z == 1) // if mate is palmata
+					settle = settle_pal; // settle at palmata rate 
+				else if (mate.z == 0.5) // if mate is prolifera
+					settle = settle_pal; // settle at palmata rate
+			}
+			else if (individual.z == 0.5) // if individual is prolifera
+			{
+				if (mate.z == 0) // if mate is cervicornis
+					settle = settle_cer; // settle at cervicornis rate
+				else if (mate.z == 1) // if mate is palmata
+					settle = settle_pal; // settle at palmata rate
+				else if (mate.z == 0.5) // if mate is prolifera
+					settle = settle_pro; // settle at prolifera rate
+			}
+			
+			// Generate offspring that will settle sucessfully based on above rate determination
+			for (i in seqLen(rpois(1, settle)))
+			{
+				// Only runs if a mate is nearby
+				if (mate.size())
+				{
+					// Generates an offspring
+					offspring = subpop.addCrossed(individual, mate);
+					
+					// Define z param in offspring (phenotype, 0 = cervicornis, 1 = palmata, 2 == prolifera)
+					offspring.z = 0;
+					
+					// Determine percent ancestry in offspring
+					ancestry = offspring.countOfMutationsOfType(m2) / (sim.chromosome.lastPosition * 2 + 2);
+					
+					// Determine species of the offspring based on ancestry threshold
+					
+					if (ancestry > ancestry_threshold) // if percent palmata ancestry is larger than the ancestry_threshold to be a palmata
+						offspring.z = 1; // offspring is palmata
+					else if (ancestry < (1-ancestry_threshold)) // if percent palmata ancestry is smaller than 1 minus the ancestry_threshold to be a palmata 
+						offspring.z = 0;  // offspring is cervicornis
+					else
+						offspring.z = 0.5; // otherwise it is middle of the range and genomically can be considered a prolifera
+
+				}
+			}
+		}
+	}
+}
+
+
+modifyChild() {
+	// set offspring position based on parental position
+	do pos = c(parent1.spatialPosition[0:1] + rnorm(2, 0, SDX), 0.0);
+	while (!p1.pointInBounds(pos));
+	child.setSpatialPosition(pos);
+	
+	return T;
+}
+
+
+late() {
+	// construct phenotypes and fitness effects from QTLs
+	inds = sim.subpopulations.individuals;
+	phenotype = inds.countOfMutationsOfType(m2) / (sim.chromosome.lastPosition * 2 + 2);
+	location = inds.spatialPosition[rep(c(T,T,F), inds.size())];
+	optimum = p1.spatialMapValue("map1", location);
+	inds.fitnessScaling = 1.0 + dnorm(phenotype, optimum, sigma_K);
+	//inds.z = phenotype;
+	
+	// color individuals according to z-val
+	inds.color = p1.spatialMapColor("map1", phenotype);
+	
+	// evaluate phenotypic competition
+	i1.evaluate(p1);
+	competition = sapply(inds, "sum(i1.strength(applyValue));");
+	effects = 1.0 - competition / size(inds);
+	inds.fitnessScaling = inds.fitnessScaling * effects;
+	
+	p1.fitnessScaling = N / p1.individualCount;	
+
+}
+
+
+2: first()
+{
+	i2.evaluate(p1); // Initialize mating interaction
+}
+
+10000 late() {
+	sim.simulationFinished();
+}
