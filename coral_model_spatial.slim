@@ -3,7 +3,7 @@
 initialize() {
 	defineConstant("sigma_C", 0.5); // Phenotypic competition
 	defineConstant("sigma_K", 0.5); // Fitness scaling based on habitat (color of map)
-	defineConstant("MD", 1); // Mating distance (km, I think?)
+	defineConstant("MD", 1); // Mating distance (km)
 	defineConstant("N", 1000); // Starting population
 	defineConstant("SR", 0.5); // Starting Ratio (palm:cerv)
 	defineConstant("settle_cer", 0.022308); // Settlement for cervicornis X cervicornis cross
@@ -17,12 +17,15 @@ initialize() {
 	
 	initializeSLiMModelType("nonWF");
 	initializeSLiMOptions(dimensionality="xyz");
-	initializeMutationRate(0.0);
-	initializeMutationType("m2", 0.5, "f", 0.0);
+initializeMutationType("m1", 0.5, "f", 0.0); // Tag palmata ancestry
+	m1.convertToSubstitution = F;
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, 267); // Genome Size in MB
+	
+	initializeMutationType("m2", 0.5, "f", 0.0); // Speciation Loci
 	m2.convertToSubstitution = F;
 	
-	initializeGenomicElementType("g1", m2, 1.0);
-	initializeGenomicElement(g1, 0, 267); // Genome Size in MB
+	initializeMutationRate(0.0); // Zero Mutations
 	rates = c(0.0447, 0.5, 0.0359, 0.5, 0.05, 0.5, 0.0453, 0.5, 0.05, 0.5, 0.0419, 0.5, 0.0505, 0.5, 0.0469, 0.5, 0.0424, 0.5, 0.0518, 0.5, 0.0542, 0.5, 0.0501, 0.5, 0.041, 0.5, 0.0632);
 	ends = c(27, 28, 54, 55, 76, 77, 95, 96, 115, 116, 136, 137, 152, 153, 167, 168, 186, 187, 205, 206, 222, 223, 239, 240, 253, 254, 267); // Recombination Rates and Chromosome Initialization
 	initializeRecombinationRate(rates, ends);
@@ -55,7 +58,17 @@ initialize() {
 	// Tag genomic ancestry of palmata with marker mutations (m1)
 	// Each marker mutation represents 1Mb
 	indpalmata = p1.individuals[p1.individuals.z == 1];
-	indpalmata.genomes.addNewMutation(m2, 0.0, 0:267);
+	indpalmata.genomes.addNewMutation(m1, 0.0, 0:267);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 26:26);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 53:53);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 80:80);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 107:107);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 134:134);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 160:160);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 186:186);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 214:214);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 240:240);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 260:260);
 	
 	defineConstant("mapValues", matrix(runif(25, 0, 1), ncol=5));
 	p1.defineSpatialMap("map1", "xy", mapValues, interpolate=T,
@@ -146,15 +159,19 @@ reproduction()
 					// Determine percent ancestry in offspring
 					ancestry = offspring.countOfMutationsOfType(m2) / (sim.chromosome.lastPosition * 2 + 2);
 					
+					// Determine the genotype at the speciation loci
+					species_loci = offspring.countOfMutationsOfType(m2);
+					
+					print(species_loci);
+					
 					// Determine species of the offspring based on ancestry threshold
 					
-					if (ancestry > ancestry_threshold) // if percent palmata ancestry is larger than the ancestry_threshold to be a palmata
+					if (species_loci >= 16)
 						offspring.z = 1; // offspring is palmata
-					else if (ancestry < (1-ancestry_threshold)) // if percent palmata ancestry is smaller than 1 minus the ancestry_threshold to be a palmata 
-						offspring.z = 0;  // offspring is cervicornis
+					else if (species_loci <= 4)
+						offspring.z = 0; // offspring is cervicornis
 					else
-						offspring.z = 2; // otherwise it is middle of the range and genomically can be considered a prolifera
-
+						offspring.z = 2;  // offspring is prolifera
 				}
 			}
 		}
@@ -163,10 +180,24 @@ reproduction()
 
 
 modifyChild() {
-	// set offspring position based on parental position
-	do pos = c(parent1.spatialPosition[0:1] + rnorm(2, 0, SDX), 0.0);
-	while (!p1.pointInBounds(pos));
+	
+	pos = parent1.spatialPosition;
 	child.setSpatialPosition(pos);
+	
+	// How far individuals diffuse away
+					do
+					{
+						// Normal multivariate distribution dictating dispersal to pick new coordinates in the movement range
+						coordinate_matrix = rmvnorm(1, c(0, 0), matrix(c(SDX^2, 0, 0, SDX^2), nrow=2));
+						coordinates = c(coordinate_matrix[0], coordinate_matrix[1]);
+						
+						// Determine the new positional coordinates
+						newPos = child.spatialPosition + coordinates;
+					}
+					while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0); // While not bounds
+					
+					// Set settle point for offspring
+					child.setSpatialPosition(newPos); 
 	
 	return T;
 }
