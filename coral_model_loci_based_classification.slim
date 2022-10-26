@@ -8,11 +8,11 @@ initialize()
 	// ---------------------------------------------------
 	//SET WORKING DIRECTORY AND CUSTOM MAP NAME IF DESIRED
 	if (!exists("wd"))
-		defineConstant("wd", "C:/Users/troyl/OneDrive/School/Documents/Grad School/BGEN 556/project");
-if (!exists("custom_map_filename"))
+		defineConstant("wd", "/home/tml5905/Documents/CoralPopulationSimulation");
+	if (!exists("custom_map_filename"))
 		defineConstant("custom_map_filename", 0); // Parameter = file name of map (as string) if user wants to use their own map and override the built in maps, else == 0
 	if (!exists("output_name"))
-		defineConstant("output_name", "out"); // To run default names make an empty string
+		defineConstant("output_name", "90_loci"); // To run default names make an empty string
 	
 	// Carrying Capacities and Pop Sizes:
 	// ***********************************
@@ -64,7 +64,7 @@ if (!exists("custom_map_filename"))
 	// Map Prefs: 
 	// ***********************************	
 	if (!exists("map_style"))
-		defineConstant("map_style", 1); // 0 = simple, 1 = Laughing Bird Caye, 6 = custom map
+		defineConstant("map_style", 0); // 0 = simple, 1 = Laughing Bird Caye, 6 = custom map
 	defineConstant("file_extention", ".png");
 	defineConstant("simple", wd + "/simple.png"); // File Path to Map Image
 	defineConstant("LaughingBirdCaye", wd + "/laughing_bird_caye.png"); // File Path to Map Image
@@ -76,7 +76,7 @@ if (!exists("custom_map_filename"))
 		defineConstant("map_size_length", 12.964);
 	if (!exists("map_size_width"))
 		defineConstant("map_size_width", 8.96);
-
+	
 	// ----------------------------------------------------
 	//  GENETIC COMPONENT --> Initialize Genomic Elements
 	// ----------------------------------------------------
@@ -112,7 +112,7 @@ if (!exists("custom_map_filename"))
 
 1 early()
 {
-
+	
 	// -----------------------------------------------------------------------------
 	//  Before sim starts ---> Initalize map and create initial starting individuals
 	// -----------------------------------------------------------------------------
@@ -142,22 +142,105 @@ if (!exists("custom_map_filename"))
 	// Define z param in individuals (phenotype, 0 = cervicornis, 1 = palmata, 2 = prolifera)
 	palmata_ind = p1.sampleIndividuals(asInteger(initial_ratio*SN));
 	palmata_ind.z = 1;
-		
+	
 	// Tag genomic ancestry of palmata with marker mutations (m1)
 	// Each marker mutation represents 1Mb
 	indpalmata = p1.individuals[p1.individuals.z == 1];
 	indpalmata.genomes.addNewMutation(m1, 0.0, 0:267);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 26:26);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 53:53);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 80:80);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 107:107);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 134:134);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 160:160);
+	
+	// Add speciation loci
+	indpalmata.genomes.addNewMutation(m2, 0.0, 0:0);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 3:3);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 6:6);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 9:9);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 12:12);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 15:15);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 18:18);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 21:21);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 24:24);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 27:27);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 30:30);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 33:33);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 36:36);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 39:39);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 42:42);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 45:45);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 48:48);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 51:51);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 54:54);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 57:57);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 60:60);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 63:63);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 66:66);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 69:69);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 72:72);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 75:75);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 78:78);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 81:81);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 84:84);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 87:87);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 90:90);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 93:93);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 96:96);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 99:99);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 102:102);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 105:105);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 108:108);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 111:111);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 114:114);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 117:117);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 120:120);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 123:123);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 126:126);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 129:129);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 132:132);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 135:135);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 138:138);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 141:141);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 144:144);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 147:147);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 150:150);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 153:153);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 156:156);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 159:159);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 162:162);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 165:165);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 168:168);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 171:171);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 174:174);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 177:177);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 180:180);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 183:183);
 	indpalmata.genomes.addNewMutation(m2, 0.0, 186:186);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 214:214);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 189:189);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 192:192);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 195:195);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 198:198);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 201:201);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 204:204);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 207:207);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 210:210);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 213:213);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 216:216);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 219:219);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 222:222);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 225:225);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 228:228);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 231:231);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 234:234);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 237:237);
 	indpalmata.genomes.addNewMutation(m2, 0.0, 240:240);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 260:260);
-		
+	indpalmata.genomes.addNewMutation(m2, 0.0, 243:243);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 246:246);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 249:249);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 252:252);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 255:255);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 258:258);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 261:261);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 264:264);
+	indpalmata.genomes.addNewMutation(m2, 0.0, 267:267);
+	
+	
 	// Add color to represent phenotype
 	for (i in p1.individuals)
 	{
@@ -180,8 +263,8 @@ if (!exists("custom_map_filename"))
 			// -------------------------------
 			// Color Based on Percent Ancestry
 			// -------------------------------
-		
-			ancestry = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+			
+			ancestry = i.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2);
 			i.color = rgb2color(hsv2rgb(c(0.6, 1.0, ancestry)));
 		}
 	}
@@ -189,7 +272,7 @@ if (!exists("custom_map_filename"))
 
 1 early()
 {
-
+	
 	// -----------------------------------------------
 	//  Before sim starts ---> Initialize output files
 	// -----------------------------------------------
@@ -293,7 +376,7 @@ reproduction()
 					offspring.z = 0;
 					
 					// Determine percent ancestry in offspring
-					ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+					ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2);
 					
 					// Determine the genotype at the speciation loci
 					species_loci = offspring.countOfMutationsOfType(m2);
@@ -302,13 +385,13 @@ reproduction()
 					
 					// Determine species of the offspring based on ancestry threshold
 					
-					if (species_loci >= 16)
+					if (species_loci >= 81)
 						offspring.z = 1; // offspring is palmata
-					else if (species_loci <= 4)
+					else if (species_loci <= 9)
 						offspring.z = 0; // offspring is cervicornis
 					else
 						offspring.z = 2;  // offspring is prolifera
-						
+					
 					if (Color_scheme == 1) // Coloring in GUI of individuals
 					{
 						// --------------------------------
@@ -330,7 +413,7 @@ reproduction()
 						// -------------------------------
 						
 						// Calculate percent ancestry
-						ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+						ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2);
 						
 						// Color as a gradient based on the percent ancestry
 						offspring.color = rgb2color(hsv2rgb(c(0.6, 1.0, ancestry)));
@@ -339,11 +422,11 @@ reproduction()
 					// Determine an intital offspring postion based to initalize the individual before dispersal step below
 					pos = individual.spatialPosition;
 					offspring.setSpatialPosition(pos);
-						
+					
 					// ---------------------------------------------------
 					//  MOVEMENT --> How larvae disperse
 					// ---------------------------------------------------
-
+					
 					// How far individuals diffuse away
 					do
 					{
@@ -357,8 +440,8 @@ reproduction()
 					while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0); // While not bounds
 					
 					// Set settle point for offspring
-					offspring.setSpatialPosition(newPos); 
-
+					offspring.setSpatialPosition(newPos);
+				
 				}
 			}
 		}
@@ -384,7 +467,7 @@ late()
 
 1:6000 late()
 {
-
+	
 	// -------------------------------------------
 	//  Each Generation ---> Output stats to files
 	// -------------------------------------------
@@ -415,25 +498,25 @@ late()
 	
 	// calculate the cervicornis ancestry in all palmata
 	if (length(palmata) != 0)
-		cervicornis_ancestry_palmata = (1 - (mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2))));
+		cervicornis_ancestry_palmata = (1 - (mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2))));
 	else
 		palmata_ancestry_palmata = 0.0;
 	
 	// calculate the palmata ancestry in all cervicornis
 	if (length(cervicornis) != 0)
-		palmata_ancestry_cervicornis = mean(cervicornis.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2));
+		palmata_ancestry_cervicornis = mean(cervicornis.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2));
 	else
 		palmata_ancestry_cervicornis = 0.0;
-		
+	
 	// calculate the palmata ancestry in all prolifera
 	if (length(prolifera) != 0)
-		palmata_ancestry_prolifera = mean(prolifera.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2));
+		palmata_ancestry_prolifera = mean(prolifera.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2));
 	else
 		palmata_ancestry_prolifera = 0.0;
-		
+	
 	// calculate the cervicornis ancestry in all prolifera
 	if (length(prolifera) != 0)
-		cervicornis_ancestry_prolifera = (1 - (mean(prolifera.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2))));
+		cervicornis_ancestry_prolifera = (1 - (mean(prolifera.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2))));
 	else
 		cervicornis_ancestry_prolifera = 0.0;
 	
