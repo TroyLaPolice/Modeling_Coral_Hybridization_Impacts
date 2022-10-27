@@ -3,38 +3,44 @@
 initialize() {
 	defineConstant("sigma_C", 0.5); // Phenotypic competition
 	defineConstant("sigma_K", 0.5); // Fitness scaling based on habitat (color of map)
-	defineConstant("MD", 1); // Mating distance (km)
-	defineConstant("N", 1000); // Starting population
+	defineConstant("MD", 5); // Mating distance (km, I think?)
+	defineConstant("N", 500); // Starting population
 	defineConstant("SR", 0.5); // Starting Ratio (palm:cerv)
 	defineConstant("settle_cer", 0.022308); // Settlement for cervicornis X cervicornis cross
 	defineConstant("settle_pal", 0.0351); // Settlement for palmata X palmata cross
 	defineConstant("settle_pro", 0.07215); // Settlement for a prolifera
-	defineConstant("cer_cer", 0.5); // Mating pref for cervicornis X cervicornis
-	defineConstant("pal_pal", 0.5); // Mating pref for palmata X palmata
+	defineConstant("cer_cer", 0.842); // Mating pref for cervicornis X cervicornis
+	defineConstant("pal_pal", 0.967); // Mating pref for palmata X palmata
 	defineConstant("pro_pro", 0.5); // Mating pref for prolifera X prolifera
-	defineConstant("ancestry_threshold", 0.9); // percent ancestry required to be parental species
-	defineConstant("SDX", 2);  // Movement distance in any direction (rolls twice, once per direction)
+	defineConstant("ancestry_threshold", 0.8); // percent ancestry required to be parental species
+	defineConstant("SDX", 10);  // Movement distance in any direction (rolls twice, once per direction)
 	
 	initializeSLiMModelType("nonWF");
 	initializeSLiMOptions(dimensionality="xyz");
-initializeMutationType("m1", 0.5, "f", 0.0); // Tag palmata ancestry
+	
+	if (!exists("wd"))
+		defineConstant("wd", "C:/Users/Nicolas Locatelli/Documents/SLIM_Coral");
+	//if (!exists("custom_map_filename"))
+		//defineConstant("custom_map_filename", 0); // Parameter = file name of map (as string) if user wants to use their own map and override the built in maps, else == 0
+	if (!exists("output_name"))
+		defineConstant("output_name", "spatial"); // To run default names make an empty string	
+	
+	initializeMutationRate(0.0);
+	initializeMutationType("m1", 0.5, "f", 0.0); // Ancestry
 	m1.convertToSubstitution = F;
+
+	
 	initializeGenomicElementType("g1", m1, 1.0);
 	initializeGenomicElement(g1, 0, 267); // Genome Size in MB
-	
-	initializeMutationType("m2", 0.5, "f", 0.0); // Speciation Loci
-	m2.convertToSubstitution = F;
-	
-	initializeMutationRate(0.0); // Zero Mutations
 	rates = c(0.0447, 0.5, 0.0359, 0.5, 0.05, 0.5, 0.0453, 0.5, 0.05, 0.5, 0.0419, 0.5, 0.0505, 0.5, 0.0469, 0.5, 0.0424, 0.5, 0.0518, 0.5, 0.0542, 0.5, 0.0501, 0.5, 0.041, 0.5, 0.0632);
 	ends = c(27, 28, 54, 55, 76, 77, 95, 96, 115, 116, 136, 137, 152, 153, 167, 168, 186, 187, 205, 206, 222, 223, 239, 240, 253, 254, 267); // Recombination Rates and Chromosome Initialization
 	initializeRecombinationRate(rates, ends);
 	
-	initializeInteractionType(1, "xyz", reciprocal=T, maxDistance=sigma_C);     // competition
+	initializeInteractionType(1, "xyz", reciprocal=T, maxDistance=sigma_C*3);     // competition
 	i1.setInteractionFunction("n", 1.0, sigma_C);
 	
 	initializeInteractionType(2, "xyz", reciprocal=T, maxDistance=MD);     // mate choice
-	//i2.setInteractionFunction("n", 1.0, MD);
+	
 }
 
 
@@ -51,7 +57,7 @@ initializeMutationType("m1", 0.5, "f", 0.0); // Tag palmata ancestry
 1 early() {
 	p1.setSpatialBounds(c(0.0, 0.0, 0.0, 1.0, 1.0, 1.0));
 	p1.individuals.setSpatialPosition(p1.pointUniform(N));
-	p1.individuals.z = 0.0;
+	p1.individuals.z = 0;
 	palmata_ind = p1.sampleIndividuals(asInteger(SR*N));
 	palmata_ind.z = 1;
 		
@@ -59,20 +65,19 @@ initializeMutationType("m1", 0.5, "f", 0.0); // Tag palmata ancestry
 	// Each marker mutation represents 1Mb
 	indpalmata = p1.individuals[p1.individuals.z == 1];
 	indpalmata.genomes.addNewMutation(m1, 0.0, 0:267);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 26:26);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 53:53);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 80:80);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 107:107);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 134:134);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 160:160);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 186:186);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 214:214);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 240:240);
-	indpalmata.genomes.addNewMutation(m2, 0.0, 260:260);
 	
 	defineConstant("mapValues", matrix(runif(25, 0, 1), ncol=5));
 	p1.defineSpatialMap("map1", "xy", mapValues, interpolate=T,
-		valueRange=c(0.0, 1.0), colors=c("red", "yellow"));
+		valueRange=c(0.0, 1), colors=c("red", "yellow"));
+		
+		// -----------------------------------------------
+	//  Before sim starts ---> Initialize output files
+	// -----------------------------------------------
+	
+	// Population stats file headings - write to file
+	stats_header_string = paste("Year", "PopulationSize", "Total_palmata", "Total_cervicornis", "Total_prolifera", "Ratio_palmata_to_cervicornis", "cervicornis_ancestry_in_palmata", "palmata_ancestry_in_cervicornis", "palmata_ancestry_in_prolifera", "cervicornis_ancestry_in_prolifera" ,sep=",");
+	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".csv");
+	writeFile(wd + output_stats_file_name, stats_header_string, append=T);
 }
 
 reproduction()
@@ -105,7 +110,7 @@ reproduction()
 		else if (individual.z == 2) // individual == prolifera
 		{
 			mates_similarity[mates_similarity_bool == T] = pro_pro; // selection probability for mates that are also prolifera
-			mates_similarity[mates_similarity_bool == F] = pro_backcross; // selection probability for mates would result in a backcross
+			mates_similarity[mates_similarity_bool == F] = (1 - pro_pro); // selection probability for mates would result in a backcross
 		}
 		
 		if (sum(mates_similarity) != 0)
@@ -157,21 +162,17 @@ reproduction()
 					offspring.z = 0;
 					
 					// Determine percent ancestry in offspring
-					ancestry = offspring.countOfMutationsOfType(m2) / (sim.chromosome.lastPosition * 2 + 2);
-					
-					// Determine the genotype at the speciation loci
-					species_loci = offspring.countOfMutationsOfType(m2);
-					
-					print(species_loci);
+					ancestry = offspring.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
 					
 					// Determine species of the offspring based on ancestry threshold
 					
-					if (species_loci >= 16)
+					if (ancestry > ancestry_threshold) // if percent palmata ancestry is larger than the ancestry_threshold to be a palmata
 						offspring.z = 1; // offspring is palmata
-					else if (species_loci <= 4)
-						offspring.z = 0; // offspring is cervicornis
+					else if (ancestry < (1-ancestry_threshold)) // if percent palmata ancestry is smaller than 1 minus the ancestry_threshold to be a palmata 
+						offspring.z = 0;  // offspring is cervicornis
 					else
-						offspring.z = 2;  // offspring is prolifera
+						offspring.z = 2; // otherwise it is middle of the range and genomically can be considered a prolifera
+
 				}
 			}
 		}
@@ -180,24 +181,10 @@ reproduction()
 
 
 modifyChild() {
-	
-	pos = parent1.spatialPosition;
+	// set offspring position based on parental position
+	do pos = c(parent1.spatialPosition[0:1] + rnorm(2, 0, SDX), 0.0);
+	while (!p1.pointInBounds(pos));
 	child.setSpatialPosition(pos);
-	
-	// How far individuals diffuse away
-					do
-					{
-						// Normal multivariate distribution dictating dispersal to pick new coordinates in the movement range
-						coordinate_matrix = rmvnorm(1, c(0, 0), matrix(c(SDX^2, 0, 0, SDX^2), nrow=2));
-						coordinates = c(coordinate_matrix[0], coordinate_matrix[1]);
-						
-						// Determine the new positional coordinates
-						newPos = child.spatialPosition + coordinates;
-					}
-					while (!p1.pointInBounds(newPos) | p1.spatialMapValue("map_object", newPos) == 0.0); // While not bounds
-					
-					// Set settle point for offspring
-					child.setSpatialPosition(newPos); 
 	
 	return T;
 }
@@ -206,26 +193,87 @@ modifyChild() {
 late() {
 	// construct phenotypes and fitness effects from QTLs
 	inds = sim.subpopulations.individuals;
-	phenotype = inds.countOfMutationsOfType(m2) / (sim.chromosome.lastPosition * 2 + 2);
+	ancestry = inds.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
+	//phenotype = inds.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2 + 2);
 	location = inds.spatialPosition[rep(c(T,T,F), inds.size())];
 	optimum = p1.spatialMapValue("map1", location);
-	inds.fitnessScaling = 1.0 + dnorm(phenotype, optimum, sigma_K);
-	//inds.z = phenotype;
+	inds.fitnessScaling = 1 + dnorm(ancestry, optimum, sigma_K);
+	//inds.z = ancestry;
 	
 	// color individuals according to z-val
-	inds.color = p1.spatialMapColor("map1", inds.z);
+	inds.color = p1.spatialMapColor("map1", ancestry);
 	
 	// evaluate phenotypic competition
 	i1.evaluate(p1);
 	competition = sapply(inds, "sum(i1.strength(applyValue));");
-	effects = 1.0 - competition / size(inds);
+	effects = 1 - competition / size(inds);
 	inds.fitnessScaling = inds.fitnessScaling * effects;
+
+	//prolifera_inds = p1.individuals[p1.individuals.z == 2];
+	//prolifera_inds.fitnessScaling = 100 / (length(prolifera_inds));
 	
 	p1.fitnessScaling = N / p1.individualCount;	
+
 
 }
 
 
-10000 late() {
-	sim.simulationFinished();
+1:2000 late() {
+	
+	// -------------------------------------------
+	//  Each Generation ---> Output stats to files
+	// -------------------------------------------
+	
+	// provide feedback on progress for command line users
+	year_counter = paste("Simulation Year: ", sim.cycle);
+	print(year_counter);
+	
+	// define vector of palmata, vector of cervicornis, vector of prolifera
+	palmata = p1.individuals[p1.individuals.z == 1];
+	cervicornis = p1.individuals[p1.individuals.z == 0];
+	prolifera = p1.individuals[p1.individuals.z == 2];
+	
+	// calculate num palmata
+	num_palmata = length(palmata);
+	
+	//calculate num cervicornis
+	num_cervicornis = length(cervicornis);
+	
+	//calculate num prolifera
+	num_prolifera = length(prolifera);
+	
+	// calculate the ratio of palmata in the total population to file
+	ratio = (num_palmata / num_cervicornis);
+	
+	// calculate population size statistics
+	pop_size = p1.individuals.length();
+	
+	// calculate the cervicornis ancestry in all palmata
+	if (length(palmata) != 0)
+		cervicornis_ancestry_palmata = (1 - (mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2))));
+	else
+		palmata_ancestry_palmata = 0.0;
+	
+	// calculate the palmata ancestry in all cervicornis
+	if (length(cervicornis) != 0)
+		palmata_ancestry_cervicornis = mean(cervicornis.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2));
+	else
+		palmata_ancestry_cervicornis = 0.0;
+	
+	// calculate the palmata ancestry in all prolifera
+	if (length(prolifera) != 0)
+		palmata_ancestry_prolifera = mean(prolifera.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2));
+	else
+		palmata_ancestry_prolifera = 0.0;
+	
+	// calculate the cervicornis ancestry in all prolifera
+	if (length(prolifera) != 0)
+		cervicornis_ancestry_prolifera = (1 - (mean(prolifera.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2))));
+	else
+		cervicornis_ancestry_prolifera = 0.0;
+	
+	// write outputs
+	output_string = paste(sim.cycle, pop_size, num_palmata, num_cervicornis, num_prolifera, ratio, cervicornis_ancestry_palmata, palmata_ancestry_cervicornis, palmata_ancestry_prolifera, cervicornis_ancestry_prolifera, sep=",");
+	output_stats_file_name = ("/sim_pop_stats_per_year_" + output_name + ".csv");
+	writeFile(wd + output_stats_file_name, output_string, append=T);
 }
