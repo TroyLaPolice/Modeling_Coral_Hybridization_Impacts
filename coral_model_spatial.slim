@@ -209,8 +209,8 @@ late() {
 	effects = 1 - competition / size(inds);
 	inds.fitnessScaling = inds.fitnessScaling * effects;
 
-	//prolifera_inds = p1.individuals[p1.individuals.z == 2];
-	//prolifera_inds.fitnessScaling = 100 / (length(prolifera_inds));
+	prolifera_inds = p1.individuals[p1.individuals.z == 2];
+	prolifera_inds.fitnessScaling = 50 / (length(prolifera_inds));
 	
 	p1.fitnessScaling = N / p1.individualCount;	
 
