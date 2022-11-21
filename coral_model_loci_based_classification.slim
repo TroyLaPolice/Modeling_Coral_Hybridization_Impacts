@@ -8,11 +8,11 @@ initialize()
 	// ---------------------------------------------------
 	//SET WORKING DIRECTORY AND CUSTOM MAP NAME IF DESIRED
 	if (!exists("wd"))
-		defineConstant("wd", "/home/tml5905/Documents/CoralPopulationSimulation");
+		defineConstant("wd", "C:/Users/troyl/OneDrive/School/Documents/Grad School/BGEN 556/project");
 	if (!exists("custom_map_filename"))
 		defineConstant("custom_map_filename", 0); // Parameter = file name of map (as string) if user wants to use their own map and override the built in maps, else == 0
 	if (!exists("output_name"))
-		defineConstant("output_name", "90_loci"); // To run default names make an empty string
+		defineConstant("output_name", "lots_of_cer"); // To run default names make an empty string
 	
 	// Carrying Capacities and Pop Sizes:
 	// ***********************************
@@ -27,14 +27,14 @@ initialize()
 	if (!exists("proliferaK"))
 		defineConstant("proliferaK", 1000 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
 	if (!exists("initial_ratio"))
-		defineConstant("initial_ratio", 0.5); // percentage of inital population that is palmata (used in initilization step of sim)
+		defineConstant("initial_ratio", 0.1); // percentage of inital population that is palmata (used in initilization step of sim)
 	
 	// Movement and interaction and competition:
 	// ***********************************
 	if (!exists("SDX"))
-		defineConstant("SDX", 5); // Movement standard diviation (sigma) for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
+		defineConstant("SDX", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
 	if (!exists("SDY"))
-		defineConstant("SDY", 5); // Movement standard diviation (sigma) for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
+		defineConstant("SDY", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
 	
 	// Mating rate params:
 	// ***********************************
@@ -385,9 +385,9 @@ reproduction()
 					
 					// Determine species of the offspring based on ancestry threshold
 					
-					if (species_loci >= 81)
+					if (species_loci >= 162)
 						offspring.z = 1; // offspring is palmata
-					else if (species_loci <= 9)
+					else if (species_loci <= 18)
 						offspring.z = 0; // offspring is cervicornis
 					else
 						offspring.z = 2;  // offspring is prolifera
