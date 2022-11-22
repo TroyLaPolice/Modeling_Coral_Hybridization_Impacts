@@ -381,8 +381,6 @@ reproduction()
 					// Determine the genotype at the speciation loci
 					species_loci = offspring.countOfMutationsOfType(m2);
 					
-					print(species_loci);
-					
 					// Determine species of the offspring based on ancestry threshold
 					
 					if (species_loci >= 162)
@@ -496,7 +494,7 @@ late()
 	// calculate population size statistics
 	pop_size = p1.individuals.length();
 	
-	// calculate the cervicornis ancestry in all palmata
+	// calculate the cervicornis ancestry in all palmataa
 	if (length(palmata) != 0)
 		cervicornis_ancestry_palmata = (1 - (mean(palmata.countOfMutationsOfType(m1) / (sim.chromosome.lastPosition * 2))));
 	else
