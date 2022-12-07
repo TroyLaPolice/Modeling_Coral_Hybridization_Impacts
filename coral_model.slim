@@ -8,24 +8,24 @@ initialize()
 	// ---------------------------------------------------
 	//SET WORKING DIRECTORY AND CUSTOM MAP NAME IF DESIRED
 	if (!exists("wd"))
-		defineConstant("wd", "/storage/home/tml5905/work/CoralHybridization");
+		defineConstant("wd", "/home/tml5905/Documents/CoralPopulationSimulation");
 	if (!exists("custom_map_filename"))
 		defineConstant("custom_map_filename", 0); // Parameter = file name of map (as string) if user wants to use their own map and override the built in maps, else == 0
 	if (!exists("output_name"))
-		defineConstant("output_name", "out"); // To run default names make an empty string
+		defineConstant("output_name", "run1"); // To run default names make an empty string
 	
 	// Carrying Capacities and Pop Sizes:
 	// ***********************************
 	if (!exists("DS"))
 		defineConstant("DS", 1); // Down scale the simulation ( Must be >= 1)
 	if (!exists("SN"))
-		defineConstant("SN", integerDiv(4500, DS)); // Starting number of individuals
+		defineConstant("SN", integerDiv(3000, DS)); // Starting number of individuals
 	if (!exists("cervicornisK"))
 		defineConstant("cervicornisK", 1500 / DS); // carrying capacity (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling 
 	if (!exists("palmataK"))
-		defineConstant("palmataK", 1500 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
+		defineConstant("palmataK", 2360 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
 	if (!exists("proliferaK"))
-		defineConstant("proliferaK", 1500 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
+		defineConstant("proliferaK", 4851 / DS); // carrying capacity for palmata (ENTER IN INDIVIDUALS PER KM2) for density dependent scaling
 	if (!exists("initial_ratio"))
 		defineConstant("initial_ratio", 0.5); // percentage of inital population that is palmata (used in initilization step of sim)
 	
@@ -35,17 +35,21 @@ initialize()
 		defineConstant("SDX", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
 	if (!exists("SDY"))
 		defineConstant("SDY", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
-	
+	if (!exists("meanX"))
+		defineConstant("meanX", 0); // Movement mean for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
+	if (!exists("meanY"))
+		defineConstant("meanY", 0); // Movement mean for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
+
 	// Mating rate params:
 	// ***********************************
 	if (!exists("settle_cer"))
-		defineConstant("settle_cer", 0.022308); // Settlement for cervicornis X cervicornis cross
+		defineConstant("settle_cer", 0.02); // Settlement for cervicornis X cervicornis cross
 	if (!exists("settle_pal"))
-		defineConstant("settle_pal", 0.0351); // Settlement for palmata X palmata cross
+		defineConstant("settle_pal", 0.02); // Settlement for palmata X palmata cross
 	if (!exists("settle_pro"))
-		defineConstant("settle_pro", 0.07215); // Settlement for a prolifera
+		defineConstant("settle_pro", 0.02); // Settlement for a prolifera
 	if (!exists("MD"))
-		defineConstant("MD", 5); // Mating distance (ENTER IN KILOMETERS)
+		defineConstant("MD", 0.6); // Mating distance (ENTER IN KILOMETERS)
 	if (!exists("cer_cer"))
 		defineConstant("cer_cer", 0.525); // Mating pref for cervicornis X cervicornis
 	if (!exists("pal_pal"))
@@ -429,7 +433,7 @@ reproduction()
 					do
 					{
 						// Normal multivariate distribution dictating dispersal to pick new coordinates in the movement range
-						coordinate_matrix = rmvnorm(1, c(0, 0), matrix(c(SDX^2, 0, 0, SDY^2), nrow=2));
+						coordinate_matrix = rmvnorm(1, c(meanX, meanY), matrix(c(SDX^2, 0, 0, SDY^2), nrow=2));
 						coordinates = c(coordinate_matrix[0], coordinate_matrix[1]);
 						
 						// Determine the new positional coordinates
