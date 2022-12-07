@@ -22,3 +22,6 @@ This is the map file used to simulate realistic reef landscape on the caye
 
 ###### simple.png
 This is the simplified map file
+
+###### write_mutation_code_lines.py
+This is a simple python script that was used to space equidistant speciation loci across the genome. Writes out slim code that was added to the model.
