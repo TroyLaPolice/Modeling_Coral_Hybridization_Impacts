@@ -2,7 +2,8 @@
 
 
 
-#### File descriptions
+
+#### File descriptions:
 
 ###### coral_model.slim
 This is the current working model used to run the simulations
