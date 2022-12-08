@@ -29,7 +29,7 @@ initialize()
 	if (!exists("initial_ratio"))
 		defineConstant("initial_ratio", 0.5); // percentage of inital population that is palmata (used in initilization step of sim)
 	
-	// Movement and interaction and competition:
+	// Movement:
 	// ***********************************
 	if (!exists("SDX"))
 		defineConstant("SDX", 10); // Movement standard diviation (sigma) for distribution of distances sampled from in the x direction (ENTER IN KILOMETERS)
@@ -40,7 +40,7 @@ initialize()
 	if (!exists("meanY"))
 		defineConstant("meanY", 0); // Movement mean for distribution of distances sampled from in the y direction (ENTER IN KILOMETERS)
 
-	// Mating rate params:
+	// Mating and settlement rate params:
 	// ***********************************
 	if (!exists("settle_cer"))
 		defineConstant("settle_cer", 0.02); // Settlement for cervicornis X cervicornis cross
